@@ -6,6 +6,7 @@ from typing import Any
 
 from answer_generator import answer_result_to_json, generate_answer
 from config import settings
+from context_expander import expand_section_context
 from reranker import rerank
 from retriever import HybridRetriever, RetrievalCandidate
 
@@ -45,7 +46,8 @@ def answer_question(question: str, *, json_output: bool = False) -> None:
         top_k_hybrid=settings.top_k_hybrid,
     )
     ranked = rerank(question, candidates, top_k=settings.top_k_final)
-    result = generate_answer(question, ranked)
+    expanded = expand_section_context(question, ranked, vector_store=retriever.vector_store)
+    result = generate_answer(question, expanded)
 
     if json_output:
         print(answer_result_to_json(result))

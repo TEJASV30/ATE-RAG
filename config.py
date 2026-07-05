@@ -59,7 +59,10 @@ class Settings:
     ollama_base_url: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
     ollama_model: str = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
     llm_temperature: float = _get_float("LLM_TEMPERATURE", 0.0)
-    max_context_chars: int = _get_int("MAX_CONTEXT_CHARS", 14000)
+    max_context_chars: int = _get_int("MAX_CONTEXT_CHARS", 110000)
+    llm_context_target_chars: int = _get_int("LLM_CONTEXT_TARGET_CHARS", 18000)
+    direct_section_outline_answers: bool = _get_bool("DIRECT_SECTION_OUTLINE_ANSWERS", True)
+    section_outline_description_chars: int = _get_int("SECTION_OUTLINE_DESCRIPTION_CHARS", 520)
 
     chunk_size: int = _get_int("CHUNK_SIZE", 900)
     chunk_overlap: int = _get_int("CHUNK_OVERLAP", 180)
@@ -72,6 +75,8 @@ class Settings:
     top_k_bm25: int = _get_int("TOP_K_BM25", 30)
     top_k_hybrid: int = _get_int("TOP_K_HYBRID", 25)
     top_k_final: int = _get_int("TOP_K_FINAL", 5)
+    section_expansion_max_pages: int = _get_int("SECTION_EXPANSION_MAX_PAGES", 18)
+    section_expansion_max_chars: int = _get_int("SECTION_EXPANSION_MAX_CHARS", 100000)
     min_retrieval_confidence: float = _get_float("MIN_RETRIEVAL_CONFIDENCE", 0.12)
 
     dense_weight: float = _get_float("DENSE_WEIGHT", 0.58)
