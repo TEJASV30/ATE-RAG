@@ -10,6 +10,7 @@ from typing import Any
 from rank_bm25 import BM25Okapi
 
 from ate_rag.config import settings
+from ate_rag.retrieval.query_expansion import expanded_queries, role_specific_boost, synonym_text_boost
 from ate_rag.retrieval.vector_store import VectorStore
 
 
@@ -77,6 +78,18 @@ class BM25Index:
             )
         return hits
 
+    def search_many(self, queries: list[str], *, top_k: int) -> list[dict[str, Any]]:
+        merged: dict[str, dict[str, Any]] = {}
+        for query in queries:
+            for hit in self.search(query, top_k=top_k):
+                existing = merged.get(hit["chunk_id"])
+                if existing is None or hit["bm25_score"] > existing["bm25_score"]:
+                    merged[hit["chunk_id"]] = hit
+        # Keep the union from each query variant. If we trim globally by BM25 here,
+        # broad synonyms such as "issuer" can crowd out the narrower variant that
+        # actually carries the answer, such as "legal counsel to our company".
+        return sorted(merged.values(), key=lambda hit: hit["bm25_score"], reverse=True)
+
 
 def exact_phrase_boost(query: str, text: str) -> float:
     query = query.strip().lower()
@@ -102,6 +115,7 @@ def metadata_boost(query: str, candidate: RetrievalCandidate) -> float:
     is_table = str(metadata.get("is_table")).lower() == "true" or metadata.get("is_table") is True
     chunk_strategy = str(metadata.get("chunk_strategy", ""))
     section_title = str(metadata.get("section_title") or "").lower()
+    text_lower = text.lower()
 
     if NUMERIC_QUERY_PATTERN.search(query) and is_table:
         boost += 0.16
@@ -113,6 +127,9 @@ def metadata_boost(query: str, candidate: RetrievalCandidate) -> float:
         boost -= 0.03
     if chunk_strategy == "page" and len(text) > 2500 and "page" not in query.lower():
         boost -= 0.05
+
+    boost += synonym_text_boost(query, text)
+    boost += role_specific_boost(query, text)
     return boost
 
 
@@ -126,9 +143,15 @@ class HybridRetriever:
         if bm25_index is not None:
             self.bm25_index = bm25_index
         elif settings.bm25_index_path.exists():
-            self.bm25_index = BM25Index.load()
+            try:
+                self.bm25_index = BM25Index.load()
+            except Exception as exc:
+                print(f"BM25 index could not be loaded ({exc}). Rebuilding BM25 index from vector store.")
+                self.bm25_index = BM25Index.build_from_vector_store(self.vector_store)
+                self.bm25_index.save()
         else:
             self.bm25_index = BM25Index.build_from_vector_store(self.vector_store)
+            self.bm25_index.save()
 
     @staticmethod
     def _merge(vector_hits: list[dict[str, Any]], bm25_hits: list[dict[str, Any]]) -> dict[str, RetrievalCandidate]:
@@ -165,8 +188,10 @@ class HybridRetriever:
         top_k_hybrid: int | None = None,
         where: dict[str, Any] | None = None,
     ) -> list[RetrievalCandidate]:
-        vector_hits = self.vector_store.query(query, top_k=top_k_vector or settings.top_k_vector, where=where)
-        bm25_hits = self.bm25_index.search(query, top_k=top_k_bm25 or settings.top_k_bm25)
+        query_variants = expanded_queries(query, max_variants=settings.max_query_expansion_variants)
+        vector_query = query_variants[-1] if len(query_variants) > 1 else query
+        vector_hits = self.vector_store.query(vector_query, top_k=top_k_vector or settings.top_k_vector, where=where)
+        bm25_hits = self.bm25_index.search_many(query_variants, top_k=top_k_bm25 or settings.top_k_bm25)
         merged = self._merge(vector_hits, bm25_hits)
 
         for candidate in merged.values():

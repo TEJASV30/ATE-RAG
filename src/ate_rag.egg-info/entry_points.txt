@@ -1,0 +1,4 @@
+[console_scripts]
+ate-rag-ask = ate_rag.apps.rag_user_app:main
+ate-rag-evaluate = ate_rag.evaluation.evaluate:main
+ate-rag-ingest = ate_rag.ingestion.ingest:main

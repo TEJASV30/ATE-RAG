@@ -10,6 +10,7 @@ from typing import Any
 
 from ate_rag.config import settings
 from ate_rag.generation.answer_generator import generate_answer
+from ate_rag.retrieval.query_expansion import expanded_query_for_rerank
 from ate_rag.retrieval.reranker import rerank
 from ate_rag.retrieval.retriever import HybridRetriever
 
@@ -60,7 +61,7 @@ def evaluate(dataset_path: Path, *, top_k: int | None = None) -> dict[str, Any]:
 
         candidates = retriever.retrieve(question)
         hit_ids = [candidate.chunk_id for candidate in candidates]
-        ranked = rerank(question, candidates, top_k=top_k or settings.top_k_final)
+        ranked = rerank(expanded_query_for_rerank(question), candidates, top_k=top_k or settings.top_k_final)
         result = generate_answer(question, ranked)
 
         exact_match = answer_contains_expected(result.answer, expected_answer)

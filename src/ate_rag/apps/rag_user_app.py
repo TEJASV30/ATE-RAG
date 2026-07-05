@@ -7,6 +7,7 @@ from typing import Any
 from ate_rag.config import settings
 from ate_rag.generation.answer_generator import answer_result_to_json, generate_answer
 from ate_rag.retrieval.context_expander import expand_section_context
+from ate_rag.retrieval.query_expansion import expanded_query_for_rerank
 from ate_rag.retrieval.reranker import rerank
 from ate_rag.retrieval.retriever import HybridRetriever, RetrievalCandidate
 
@@ -39,13 +40,18 @@ def print_candidate(candidate: RetrievalCandidate, idx: int) -> None:
 
 def answer_question(question: str, *, json_output: bool = False) -> None:
     retriever = HybridRetriever()
+    if retriever.vector_store.collection.count() == 0:
+        print("\nAnswer")
+        print("No indexed documents were found. Run `python ingest.py` after adding PDFs to `data/documents/`.")
+        return
+
     candidates = retriever.retrieve(
         question,
         top_k_vector=settings.top_k_vector,
         top_k_bm25=settings.top_k_bm25,
         top_k_hybrid=settings.top_k_hybrid,
     )
-    ranked = rerank(question, candidates, top_k=settings.top_k_final)
+    ranked = rerank(expanded_query_for_rerank(question), candidates, top_k=settings.top_k_final)
     expanded = expand_section_context(question, ranked, vector_store=retriever.vector_store)
     result = generate_answer(question, expanded)
 

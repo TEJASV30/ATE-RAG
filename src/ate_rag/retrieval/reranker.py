@@ -32,12 +32,9 @@ def rerank(query: str, candidates: list[RetrievalCandidate], *, top_k: int | Non
             normalized = math.exp(max(raw_score, -50.0)) / (1.0 + math.exp(max(raw_score, -50.0)))
         candidate.rerank_score = normalized
 
-    ranked = sorted(
-        candidates,
-        key=lambda item: (
-            item.rerank_score if item.rerank_score is not None else float("-inf"),
-            item.hybrid_score,
-        ),
-        reverse=True,
-    )
+    def blended_score(candidate: RetrievalCandidate) -> float:
+        rerank_score = candidate.rerank_score if candidate.rerank_score is not None else 0.0
+        return 0.65 * rerank_score + 0.35 * candidate.hybrid_score
+
+    ranked = sorted(candidates, key=lambda item: (blended_score(item), item.hybrid_score), reverse=True)
     return ranked[: top_k or settings.top_k_final]

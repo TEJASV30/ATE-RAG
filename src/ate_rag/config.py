@@ -75,6 +75,7 @@ class Settings:
     top_k_bm25: int = _get_int("TOP_K_BM25", 30)
     top_k_hybrid: int = _get_int("TOP_K_HYBRID", 25)
     top_k_final: int = _get_int("TOP_K_FINAL", 5)
+    max_query_expansion_variants: int = _get_int("MAX_QUERY_EXPANSION_VARIANTS", 8)
     section_expansion_max_pages: int = _get_int("SECTION_EXPANSION_MAX_PAGES", 18)
     section_expansion_max_chars: int = _get_int("SECTION_EXPANSION_MAX_CHARS", 100000)
     min_retrieval_confidence: float = _get_float("MIN_RETRIEVAL_CONFIDENCE", 0.12)

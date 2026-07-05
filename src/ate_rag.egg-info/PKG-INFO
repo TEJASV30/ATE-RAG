@@ -1,3 +1,27 @@
+Metadata-Version: 2.4
+Name: ate-rag
+Version: 0.1.0
+Summary: Production-oriented retrieval-augmented generation pipeline for enterprise PDFs and image documents.
+Requires-Python: >=3.14
+Description-Content-Type: text/markdown
+Requires-Dist: chromadb>=0.5.0
+Requires-Dist: fastapi>=0.111.0
+Requires-Dist: groq>=0.9.0
+Requires-Dist: numpy>=1.26.0
+Requires-Dist: opencv-python-headless>=4.9.0
+Requires-Dist: pandas>=2.1.0
+Requires-Dist: pdfplumber>=0.11.0
+Requires-Dist: pillow>=10.0.0
+Requires-Dist: pymupdf>=1.24.0
+Requires-Dist: pytesseract>=0.3.10
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: rank-bm25>=0.2.2
+Requires-Dist: requests>=2.31.0
+Requires-Dist: retriever>=3.1.0
+Requires-Dist: sentence-transformers>=3.0.0
+Requires-Dist: tqdm>=4.66.0
+Requires-Dist: uvicorn>=0.30.0
+
 # Enterprise RAG Pipeline
 
 This project implements an open-source-first Retrieval-Augmented Generation pipeline for enterprise PDFs, scanned PDFs, image documents, mixed text/table documents, financial reports, legal documents, contracts, manuals, policies, forms, and research papers.
@@ -71,7 +95,7 @@ The root wrappers keep the simple local commands working. If you install the pac
 - `src/ate_rag/retrieval/embeddings.py` uses SentenceTransformers with query/document/table prefixes for stronger retrieval behavior.
 - `src/ate_rag/retrieval/vector_store.py` persists embeddings, text, and metadata in ChromaDB using cosine distance.
 - `src/ate_rag/retrieval/retriever.py` combines dense vector search and BM25 keyword search, then applies metadata boosts for tables, sections, exact terms, and numerical questions.
-- `src/ate_rag/retrieval/query_expansion.py` normalizes common domain typos and expands domain synonyms before retrieval and reranking, such as issuer/company, contract/agreement, vendor/supplier, termination/cancellation, auditor/accountant, and legal counsel/law firm.
+- `src/ate_rag/retrieval/query_expansion.py` expands domain synonyms before retrieval and reranking, such as issuer/company, contract/agreement, vendor/supplier, termination/cancellation, auditor/accountant, and legal counsel/law firm.
 - `src/ate_rag/retrieval/reranker.py` applies a CrossEncoder reranker to improve precision before answer generation.
 - `src/ate_rag/retrieval/context_expander.py` expands broad section-level questions, such as risk-factor or policy-section questions, into full section context.
 - `src/ate_rag/generation/answer_generator.py` uses Groq when `GROQ_API_KEY` is present, otherwise Ollama if available, and falls back to grounded extractive or deterministic section-outline answers. It uses strict context-only prompting and validation to reduce hallucination.
