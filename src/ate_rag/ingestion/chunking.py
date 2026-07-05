@@ -5,9 +5,9 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
-from config import settings
-from document_loaders import LoadedDocument, PageContent
-from table_extractor import ExtractedTable
+from ate_rag.config import settings
+from ate_rag.ingestion.document_loaders import LoadedDocument, PageContent
+from ate_rag.ingestion.table_extractor import ExtractedTable
 
 
 @dataclass

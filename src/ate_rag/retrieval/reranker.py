@@ -5,8 +5,8 @@ import math
 
 from sentence_transformers import CrossEncoder
 
-from config import settings
-from retriever import RetrievalCandidate
+from ate_rag.config import settings
+from ate_rag.retrieval.retriever import RetrievalCandidate
 
 
 @lru_cache(maxsize=2)

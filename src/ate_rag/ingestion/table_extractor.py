@@ -13,7 +13,7 @@ import pandas as pd
 import pdfplumber
 from PIL import Image
 
-from ocr_utils import preprocess_for_ocr
+from ate_rag.ingestion.ocr_utils import preprocess_for_ocr
 
 
 @dataclass

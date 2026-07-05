@@ -9,8 +9,8 @@ from typing import Any
 
 from rank_bm25 import BM25Okapi
 
-from config import settings
-from vector_store import VectorStore
+from ate_rag.config import settings
+from ate_rag.retrieval.vector_store import VectorStore
 
 
 TOKEN_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_\-./%$]*")

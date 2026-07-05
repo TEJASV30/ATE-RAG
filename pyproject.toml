@@ -1,7 +1,7 @@
 [project]
 name = "ate-rag"
 version = "0.1.0"
-description = "Add your description here"
+description = "Production-oriented retrieval-augmented generation pipeline for enterprise PDFs and image documents."
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
@@ -22,3 +22,15 @@ dependencies = [
     "tqdm>=4.66.0",
     "uvicorn>=0.30.0",
 ]
+
+[project.scripts]
+ate-rag-ingest = "ate_rag.ingestion.ingest:main"
+ate-rag-ask = "ate_rag.apps.rag_user_app:main"
+ate-rag-evaluate = "ate_rag.evaluation.evaluate:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -9,9 +9,9 @@ import chromadb
 from chromadb.config import Settings as ChromaSettings
 from tqdm import tqdm
 
-from chunking import Chunk
-from config import settings
-from embeddings import embed_documents, embed_query
+from ate_rag.config import settings
+from ate_rag.ingestion.chunking import Chunk
+from ate_rag.retrieval.embeddings import embed_documents, embed_query
 
 
 class VectorStore:

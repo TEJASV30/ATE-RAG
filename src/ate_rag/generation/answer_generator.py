@@ -7,8 +7,8 @@ from typing import Any
 
 import requests
 
-from config import settings
-from retriever import RetrievalCandidate, retrieval_confidence
+from ate_rag.config import settings
+from ate_rag.retrieval.retriever import RetrievalCandidate, retrieval_confidence
 
 
 UNAVAILABLE = "The answer is not available in the provided context."

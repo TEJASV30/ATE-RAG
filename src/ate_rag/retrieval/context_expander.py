@@ -4,9 +4,9 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from config import settings
-from retriever import RetrievalCandidate, tokenize
-from vector_store import VectorStore
+from ate_rag.config import settings
+from ate_rag.retrieval.retriever import RetrievalCandidate, tokenize
+from ate_rag.retrieval.vector_store import VectorStore
 
 
 BROAD_SECTION_TERMS = re.compile(

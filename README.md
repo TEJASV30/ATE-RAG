@@ -42,18 +42,39 @@ python3 rag_user_app.py
 python3 rag_user_app.py "What does the contract say about termination?"
 ```
 
+## Project Structure
+
+```text
+.
+├── data/documents/              # Put PDFs and image documents here
+├── vector_store/                # Generated ChromaDB and BM25 indexes
+├── src/ate_rag/
+│   ├── apps/                    # CLI application entry points
+│   ├── evaluation/              # Q&A evaluation utilities
+│   ├── generation/              # Answer generation and validation
+│   ├── ingestion/               # PDF/image loading, OCR, tables, chunking
+│   ├── retrieval/               # Embeddings, vector store, BM25, reranking, section expansion
+│   └── config.py                # Environment-backed settings
+├── ingest.py                    # Backward-compatible wrapper
+├── rag_user_app.py              # Backward-compatible wrapper
+└── evaluate.py                  # Backward-compatible wrapper
+```
+
+The root wrappers keep the simple local commands working. If you install the package, equivalent console commands are `ate-rag-ingest`, `ate-rag-ask`, and `ate-rag-evaluate`.
+
 ## How It Works
 
-- `document_loaders.py` detects PDFs and image files, extracts native PDF text with PyMuPDF, falls back to OCR when text is weak, preserves source filename and page number, and gathers layout blocks.
-- `ocr_utils.py` preprocesses images with OpenCV using grayscale conversion, denoising, thresholding, and deskewing before Tesseract OCR. OCR chunks are marked with `extraction_method="ocr"` and confidence when available.
-- `table_extractor.py` extracts native PDF tables with pdfplumber, normalizes them with Pandas, and creates OCR table candidates from line-heavy scanned images. Tables are stored as full-table, row-level, and column-aware retrieval chunks.
-- `chunking.py` creates page, section, semantic, small precise, OCR, table, row-level, and column-level chunks with citation metadata.
-- `embeddings.py` uses SentenceTransformers with `BAAI/bge-m3` by default and query/document/table prefixes for stronger retrieval behavior.
-- `vector_store.py` persists embeddings, text, and metadata in ChromaDB using cosine distance.
-- `retriever.py` combines dense vector search and BM25 keyword search, then applies metadata boosts for tables, sections, exact terms, and numerical questions.
-- `reranker.py` applies a CrossEncoder reranker to improve precision before answer generation.
-- `answer_generator.py` uses Groq when `GROQ_API_KEY` is present, otherwise Ollama if available, and falls back to an extractive answer. It uses strict context-only prompting and validation to reduce hallucination.
-- `evaluate.py` evaluates expected Q&A pairs for retrieval hit rate, top-k accuracy, answer match, source page match, and confidence.
+- `src/ate_rag/ingestion/document_loaders.py` detects PDFs and image files, extracts native PDF text with PyMuPDF, falls back to OCR when text is weak, preserves source filename and page number, and gathers layout blocks.
+- `src/ate_rag/ingestion/ocr_utils.py` preprocesses images with OpenCV using grayscale conversion, denoising, thresholding, and deskewing before Tesseract OCR. OCR chunks are marked with `extraction_method="ocr"` and confidence when available.
+- `src/ate_rag/ingestion/table_extractor.py` extracts native PDF tables with pdfplumber, normalizes them with Pandas, and creates OCR table candidates from line-heavy scanned images. Tables are stored as full-table, row-level, and column-aware retrieval chunks.
+- `src/ate_rag/ingestion/chunking.py` creates page, section, semantic, small precise, OCR, table, row-level, and column-level chunks with citation metadata.
+- `src/ate_rag/retrieval/embeddings.py` uses SentenceTransformers with query/document/table prefixes for stronger retrieval behavior.
+- `src/ate_rag/retrieval/vector_store.py` persists embeddings, text, and metadata in ChromaDB using cosine distance.
+- `src/ate_rag/retrieval/retriever.py` combines dense vector search and BM25 keyword search, then applies metadata boosts for tables, sections, exact terms, and numerical questions.
+- `src/ate_rag/retrieval/reranker.py` applies a CrossEncoder reranker to improve precision before answer generation.
+- `src/ate_rag/retrieval/context_expander.py` expands broad section-level questions, such as risk-factor or policy-section questions, into full section context.
+- `src/ate_rag/generation/answer_generator.py` uses Groq when `GROQ_API_KEY` is present, otherwise Ollama if available, and falls back to grounded extractive or deterministic section-outline answers. It uses strict context-only prompting and validation to reduce hallucination.
+- `src/ate_rag/evaluation/evaluate.py` evaluates expected Q&A pairs for retrieval hit rate, top-k accuracy, answer match, source page match, and confidence.
 
 ## Debugging Retrieval
 

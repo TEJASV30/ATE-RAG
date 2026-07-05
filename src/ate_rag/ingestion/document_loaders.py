@@ -9,9 +9,9 @@ from typing import Any
 import fitz
 from PIL import Image
 
-from config import settings
-from ocr_utils import OCRResult, run_ocr
-from table_extractor import ExtractedTable, extract_ocr_table_candidates, extract_pdf_tables
+from ate_rag.config import settings
+from ate_rag.ingestion.ocr_utils import OCRResult, run_ocr
+from ate_rag.ingestion.table_extractor import ExtractedTable, extract_ocr_table_candidates, extract_pdf_tables
 
 
 @dataclass
